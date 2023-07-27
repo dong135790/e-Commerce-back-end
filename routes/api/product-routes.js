@@ -37,12 +37,12 @@ router.get('/:id', async (req, res) => {
 // create new product
 router.post('/', async (req, res) => {
   /* req.body should look like this...
-    {
-      product_name: "Basketball",
-      price: 200.00,
-      stock: 3,
-      tagIds: [1, 2, 3, 4]
-    }
+  {
+    product_name: "Basketball",
+    price: 200.00,
+    stock: 3,
+    tagIds: [1, 2, 3, 4]
+  }
   */
   Product.create(req.body)
     .then((product) => {
@@ -67,7 +67,6 @@ router.post('/', async (req, res) => {
 });
 
 // update product
-// update product
 router.put('/:id', async (req, res) => {
   try {
     // await based on id found
@@ -79,8 +78,10 @@ router.put('/:id', async (req, res) => {
     await product.update(req.body);
     await product.save();
     if (req.body.tagIds) {
+      // set Tags
       await product.setTags(req.body.tagIds);
     }
+    // return tags
     res.json(await product.getTags());
   } catch(err) {
     console.log(err);
@@ -90,6 +91,22 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   // delete one product by its `id` value
+  try {
+    const productData = await Product.destroy({
+      where: {
+        id: req.params.id,
+      },
+    });
+    
+    if (!productData) {
+      res.status(404).json({ message: 'No product data found with the associated id!'})
+      return;
+    }
+  // Prevents client from timing out by returning it sooner?
+  res.status(200).json(productData);
+  } catch (err) {
+    res.status(500).json(err)
+  }
 });
 
 module.exports = router;
